@@ -27,14 +27,15 @@ información extraída.
 
 
 Paso 3: Python:
-necesitarás instalar estas dependencias:
-a. "pip install requests pandas sqlalchemy python-dotenv pyodbc"
-b. "pip install pyodbc"
-c. ""
-sqlalchemy para la conexión a la base de datos.
-python-dotenvpara variables de entorno.
-Agregado pyodbcpara conexión a SQL Server
-Paso a paso para desarrollar el proyecto:
+Installation 💾
+Clone this repository:
+
+git clone https://github.com/your-username/Weather-ETL.git
+cd Weather-ETL
+Instala los paquetes de Python requeridos:
+
+pip install -r requirements.txt
+
 
 
 Paso 4: Escribir el script de extracción y carga en la
