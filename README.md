@@ -25,22 +25,23 @@ Paso 2: Instala SQLServer Microsoft:
 información extraída.
 
 
+PASO 3: PYTHON
+1. Clone este repositorio:
 
-Paso 3: Python:
-Installation 💾
-Clone this repository:
+   ```bash
+   git clone git@github.com:franncardenas/weather_project.git
+   cd Weather-ETL
+   ```
 
-git clone https://github.com/your-username/Weather-ETL.git
-cd Weather-ETL
-Instala los paquetes de Python requeridos:
+2. Instala los paquetes de Python requeridos:
 
-pip install -r requirements.txt
-
-
+   ```bash
+   pip install -r requirements.txt
+   ```
 
 Paso 4: Escribir el script de extracción y carga en la
 base de datos:
-1. Crea un script en Python llamado `extract_transform_load.py` que hará
+1. Edite el Scrip llamado `extract_transform_load.py` que hará
 la extracción de datos desde la API de OpenWeatherMap y los almacenará
 en la base de datos PostgreSQL.
 2. Función para extraer datos de la API.
