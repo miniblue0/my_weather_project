@@ -30,7 +30,6 @@ PASO 3: PYTHON
 
    ```bash
    git clone git@github.com:franncardenas/weather_project.git
-   cd Weather-ETL
    ```
 
 2. Instala los paquetes de Python requeridos:
