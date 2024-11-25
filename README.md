@@ -42,7 +42,7 @@ Paso 4: Escribir el script de extracción y carga en la
 base de datos:
 1. Edite el Scrip llamado `extract_transform_load.py` que hará
 la extracción de datos desde la API de OpenWeatherMap y los almacenará
-en la base de datos PostgreSQL.
+en la base de datos SQL Server.
 2. Función para extraer datos de la API.
 3. Función para transformar los datos.
 4. Función para cargar los datos a SQLServer.
@@ -51,11 +51,11 @@ en la base de datos PostgreSQL.
 
 Paso 5: Verificar los datos en SQLServer:
 a. Después de correr el script de Python, puedes verificar que los datos se
-hayan cargado correctamente en tu base de datos PostgreSQL ejecutando
+hayan cargado correctamente en tu base de datos SQL Server ejecutando
 una consulta en SQLServer.
 b. Instala la biblioteca de Google BigQuery en tu entorno virtual.
 c. Crea un script Python para cargar datos desde SQLserver a BigQuery.
-d. Función para extraer los datos de PostgreSQL.
+d. Función para extraer los datos de SQL Server.
 e. Función para cargar los datos a BigQuery.
 f. Proceso ETL a BigQuery.
 g. Configura las credenciales para acceder a Google Cloud siguiendo [esta
