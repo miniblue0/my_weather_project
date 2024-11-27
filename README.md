@@ -63,7 +63,6 @@ DB_URL=your_sql_server_connection_url
 En el script, cargamos estas variables de entorno:
 
 ```python
-Copiar código
 load_dotenv()  # Cargar las variables de entorno
 api_key = os.getenv("API_KEY")
 db_url = os.getenv("DB_URL")
