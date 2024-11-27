@@ -35,7 +35,7 @@ def transform_weather_data(data):
             "maximum temperature": data['main']['temp_max'],
             "humidity": data['main']['humidity'],
             "description": data['weather'][0]['description'],
-            "last_update": pd.Timestamp.now().floor('s') ##GUARDO LA HORA ACTUAL (SIN MILISEG.)
+            "last_update": pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S') ##GUARDO LA HORA ACTUAL
         }
         return pd.DataFrame([weather_data])
     return None
@@ -47,11 +47,21 @@ def transform_weather_data(data):
 def load_transformed_data(df):
     if df is not None:
         try:
+            df.rename(columns={  ##renombra las columnas del dataframe
+               "city":"city_name",
+               "current temperature": "temperature",
+               "description": "weather_description",
+               "last_update": "date_time"
+            }, inplace=True)
+         
             df.to_sql('WeatherData', engine, if_exists= 'append', index = False )
+         
             print(f'datos cargados en la tabla WeatherData')
         except Exception as e:
-            print(f"Error al cargar los datos a SQL: {str(e)}")
-
+            if "UNIQUE constraint failed" in str(e):
+                print(f"Los datos para '{df.iloc[0]['city_name']}' ya existen en la base de datos para la fecha y hora dada.")
+            else:
+                print(f"Error al cargar los datos a SQL: {str(e)}")
 ##PROCESO PRINCIPAL
 def etl(city):
 
