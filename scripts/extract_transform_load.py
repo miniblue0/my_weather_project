@@ -61,13 +61,13 @@ def load_transformed_data(df):
                                     :weather_description AS weather_description,
                                     :date_time AS date_time) AS source
                         ON target.city_name = source.city_name
-                        WHEN MATCHED THEN
+                        WHEN MATCHED THEN  #si coindice con un registro existente entonces lo actualiza
                             UPDATE SET 
                                 country = source.country,
                                 temperature = source.temperature,
                                 weather_description = source.weather_description,
                                 date_time = source.date_time
-                        WHEN NOT MATCHED THEN
+                        WHEN NOT MATCHED THEN #si no coincide con ningun registro entonces lo insertta
                             INSERT (city_name, country, temperature, weather_description, date_time)
                             VALUES (source.city_name, source.country, source.temperature, source.weather_description, source.date_time);
                     """)
