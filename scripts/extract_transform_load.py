@@ -3,82 +3,105 @@ import pandas as pd
 import requests
 from sqlalchemy import text
 from sqlalchemy import create_engine
-from dotenv import load_dotenv ##CARGO LAS VARIABLES DE ENTORNO
+from dotenv import load_dotenv
+from datetime import datetime
 
-
-load_dotenv() ##CARGO LAS CREDENCIALES.ENV PARA RECIBIR LA KEY Y LA URL
+#cargo las variables de entorno y defino el motor de la conexion
+load_dotenv()
 api_key = os.getenv("API_KEY")
 db_url = os.getenv("DB_URL")
-engine = create_engine(db_url) ##DECLARO EL MOTOR CON LA CONEXION CON SQLALCHEMY
- 
+engine = create_engine(db_url)
 
-#EXTRIGO LA INFORMACION
-def extract_weather_data (city_name):
-    url = f'http://api.openweathermap.org/data/2.5/weather?q={city_name}&&lang=es&appid={api_key}&units=metric'
+#funcion para extraer la informacion de la api y retornarlo como json
+def extract_weather_data(city_name):
+    url = f'http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}&units=metric'
     response = requests.get(url)
-    if (response.status_code == 200):  ##SI ES OK
-        data = response.json() ## CONVIERTO EL JSON A UN DICCIONARIO
-        return data 
+    if response.status_code == 200:
+        data = response.json()
+        return data
     else:
-        print(f'error al obtener respuesta de la API, statuscode:{response.statuscode()} ')
+        print(f"Error al obtener respuesta de la API, status code: {response.status_code}")
         return None
 
-## PROCESO PARA TRANSFORMAR Y FILTRAR LOS DATOS
+#funcion para transformar los datos en un dataframe
 def transform_weather_data(data):
     if data is not None:
-        ## ARMO EL DATAFRAME FILTRANDO LOS DATOS DE LA API
+        #me quedo solo con la ciudad, pais, temperatura, descripcion del clima, y por ultimo fecha y hora
         weather_data = {
-            "city": data['name'],
+            "city_name": data['name'],
             "country": data['sys']['country'],
-            "current temperature": data['main']['temp'],
-            "minimum temperature": data['main']['temp_min'],
-            "maximum temperature": data['main']['temp_max'],
-            "humidity": data['main']['humidity'],
-            "description": data['weather'][0]['description'],
-            "last_update": pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S') ##GUARDO LA HORA ACTUAL
+            "temperature": data['main']['temp'],
+            "weather_description": data['weather'][0]['description'],
+            "date_time": pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         return pd.DataFrame([weather_data])
     return None
 
-
-
-## PROCESO PARA CARGAR LOS DATOS
-
+# Función para cargar los datos en la base de datos
 def load_transformed_data(df):
     if df is not None:
         try:
-            df.rename(columns={  ##renombra las columnas del dataframe
-               "city":"city_name",
-               "current temperature": "temperature",
-               "description": "weather_description",
-               "last_update": "date_time"
-            }, inplace=True)
-         
-            df.to_sql('WeatherData', engine, if_exists= 'append', index = False )
-         
-            print(f'datos cargados en la tabla WeatherData')
+            with engine.connect() as connection: #inicio la conexion
+                for _, row in df.iterrows():
+                    #tuve que hacer una copia de la fila porque tenia este error 'SettingWithCopyWarning'
+                    row = row.copy()
+
+                    #me aseguro que date_time este en el formato datetime
+                    row['date_time'] = datetime.strptime(row['date_time'], '%Y-%m-%d %H:%M:%S')
+
+                    #un poco de depuracion :3
+                    print(f"Insertando/actualizando datos: city_name={row['city_name']}, temperature={row['temperature']}, date_time={row['date_time']}")
+
+                    #uso una query para insertar los datos o actualizar si es que existen
+                    UPSERT = text("""
+                        MERGE INTO WeatherData AS target
+                        USING (SELECT :city_name AS city_name,
+                                    :country AS country,
+                                    :temperature AS temperature,
+                                    :weather_description AS weather_description,
+                                    :date_time AS date_time) AS source
+                        ON target.city_name = source.city_name
+                        WHEN MATCHED THEN
+                            UPDATE SET 
+                                country = source.country,
+                                temperature = source.temperature,
+                                weather_description = source.weather_description,
+                                date_time = source.date_time
+                        WHEN NOT MATCHED THEN
+                            INSERT (city_name, country, temperature, weather_description, date_time)
+                            VALUES (source.city_name, source.country, source.temperature, source.weather_description, source.date_time);
+                    """)
+
+                    #ejecuto la query con las filas del dataframe como parametros
+                    connection.execute(UPSERT, {
+                        "city_name": row['city_name'],
+                        "country": row['country'],
+                        "temperature": row['temperature'],
+                        "weather_description": row['weather_description'],
+                        "date_time": row['date_time']
+                    })
+
+                    #puse un commit para guardar los cambios
+                    connection.commit()
+                 
+               #### me costo pero pude evitar tener registros duplicados ####
+
+            print(f"Datos cargados/actualizados en la tabla WeatherData")
         except Exception as e:
-            if "UNIQUE constraint failed" in str(e):
-                print(f"Los datos para '{df.iloc[0]['city_name']}' ya existen en la base de datos para la fecha y hora dada.")
-            else:
-                print(f"Error al cargar los datos a SQL: {str(e)}")
-##PROCESO PRINCIPAL
+            print(f"Error al cargar los datos a SQL: {str(e)}")
+
+#funcion principal
 def etl(city):
-
     print(f"** Extrayendo datos del clima de: {city} **")
-
-    raw_data = extract_weather_data(city) ##GUARDO LOS DATOS EN CRUDO
-
-    transformed_data = transform_weather_data(raw_data) ##GUARDO LOS DATOS TRANSFORMADS
-
-    if transformed_data is not None : ##SI NO ESTA VACIO LO CARGA
+    raw_data = extract_weather_data(city)
+    transformed_data = transform_weather_data(raw_data)
+    if transformed_data is not None:
         load_transformed_data(transformed_data)
-        print("datos cargados correctamente en la base de datos")
     else:
-        print("no se pudieron cargar los datos")
+        print("No se pudieron cargar los datos")
 
-
-city = input('Ingrese el nombre de la ciudad: ')
-etl(city)
-
-
+#inicio el script
+if __name__ == "__main__":
+    city = input("Ingrese el nombre de la ciudad que quiere buscar: ")
+    etl(city)
+ 
