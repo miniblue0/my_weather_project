@@ -6,13 +6,15 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from datetime import datetime
 
-# Cargar las variables de entorno
+#CARGO LAS VARIABLES DE ENTORNO CON LAS CREDENCIALES
 load_dotenv()
 api_key = os.getenv("API_KEY")
 db_url = os.getenv("DB_URL")
-engine = create_engine(db_url)
+engine = create_engine(db_url) #DECLARO EL MOTOR CON LA CONEXION A SQL
 
-# Función para extraer los datos de la API
+
+#FUNCION PARA EXTRAER LOS DATOS DE LA API EN FORMATO JSON
+
 def extract_weather_data(city_name):
     url = f'http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}&units=metric'
     response = requests.get(url)
@@ -23,7 +25,8 @@ def extract_weather_data(city_name):
         print(f"Error al obtener respuesta de la API, status code: {response.status_code}")
         return None
 
-# Función para transformar los datos
+
+#FUNCION PARA TRANSFORMAR EL JSON A UN DATAFRAME
 def transform_weather_data(data):
     if data is not None:
         # Filtrar y estructurar los datos necesarios
@@ -37,32 +40,32 @@ def transform_weather_data(data):
         return pd.DataFrame([weather_data])
     return None
 
-# Función para cargar los datos en la base de datos
+
+#CARGO LOS DATOS TRANSFORMADOS Y CON UNA QUERY VERIFICO PARA EVITAR DUPLICADOS
+
 def load_transformed_data(df):
     if df is not None:
         try:
             with engine.connect() as connection:
                 for _, row in df.iterrows():
-                    # Convertir `date_time` al tipo `datetime`
-                    row['date_time'] = datetime.strptime(row['date_time'], '%Y-%m-%d %H:%M:%S')
-                                        # Primero eliminar el registro si existe para esa ciudad y fecha
-                    delete_query = text("""
-                        DELETE FROM WeatherData
-                        WHERE city_name = :city_name
-                    """)
-                    connection.execute(delete_query, {
-                        "city_name": row['city_name'],
-                    })
 
-                    # Query MERGE para insertar o actualizar los datos
+                    row = row.copy() #tuve que hacer una copia de la fila porque tenia este error 'SettingWithCopyWarning '
+
+                    #vuelvo a formatear la fecha y hora
+                    row['date_time'] = datetime.strptime(row['date_time'], '%Y-%m-%d %H:%M:%S')
+                    
+                    
+                    print(f"Insertando/actualizando datos: city_name={row['city_name']}, temperature={row['temperature']}, date_time={row['date_time']}")
+
+                    #arme la query upsert para verificar si la ciudad ya existe sea actualizada, y sino sea insertada
                     UPSERT = text("""
-                        MERGE INTO WeatherData AS target
+                        MERGE INTO WeatherData AS target 
                         USING (SELECT :city_name AS city_name,
                                     :country AS country,
                                     :temperature AS temperature,
                                     :weather_description AS weather_description,
                                     :date_time AS date_time) AS source
-                        ON target.city_name = source.city_name  -- Comparar solo por city_name
+                        ON target.city_name = source.city_name
                         WHEN MATCHED THEN
                             UPDATE SET 
                                 country = source.country,
@@ -72,10 +75,9 @@ def load_transformed_data(df):
                         WHEN NOT MATCHED THEN
                             INSERT (city_name, country, temperature, weather_description, date_time)
                             VALUES (source.city_name, source.country, source.temperature, source.weather_description, source.date_time);
-                    """)
+                    """) #use un MERGE para comparar en ambos casos y ejecutar o insrtar segun corresponda
 
-                    # Ejecutar el query con los parámetros
-                    print("Ejecutando el MERGE...")
+                        #hago la verificacion del dataframe y la tabla
                     connection.execute(UPSERT, {
                         "city_name": row['city_name'],
                         "country": row['country'],
@@ -83,13 +85,15 @@ def load_transformed_data(df):
                         "weather_description": row['weather_description'],
                         "date_time": row['date_time']
                     })
+
+                    #tuve que usar commit porque no se modificaba la tabla 
                     connection.commit()
 
             print(f"Datos cargados/actualizados en la tabla WeatherData")
         except Exception as e:
             print(f"Error al cargar los datos a SQL: {str(e)}")
 
-# Función principal ETL
+#funcion principal 
 def etl(city):
     print(f"** Extrayendo datos del clima de: {city} **")
     raw_data = extract_weather_data(city)
@@ -101,5 +105,6 @@ def etl(city):
 
 # Iniciar el script
 if __name__ == "__main__":
-    city = input("Ingrese el nombre de la ciudad que quiere buscar: ")
-    etl(city)
+    ciudades = ['Buenos Aires', 'Rosario','Cordoba','Mendoza','San Juan','La Plata' ]
+    for ciudad in ciudades:
+        etl(ciudad)
