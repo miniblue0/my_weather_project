@@ -103,7 +103,7 @@ def etl(city):
     else:
         print("No se pudieron cargar los datos")
 
-# Iniciar el script
+#ejecuto el script y cargo/actualizo una lista de ciudades
 if __name__ == "__main__":
     ciudades = ['Buenos Aires','Corrientes', 'Rosario','Cordoba','Mendoza','San Juan','La Plata', 'El Bolson', 'Bariloche', 'Mar del Plata']
     for ciudad in ciudades:
