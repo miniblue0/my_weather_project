@@ -92,11 +92,11 @@ CREATE TABLE WeatherData (
 ---
 
 ### 6. Detalles del proceso ETL:
-    - 1. Extraccion:
-            La funcion `extract_weather_data` realiza la consulta a la API para recibir los datos y retornarlos en formato JSON.
-    - 2. Transformacion:
-            La funcion `transform_weather_data` organiza los datos en un DataFrame de Pandas filtrando por datos en concreto.
-    - 3. Carga:
-            La funcion `load_transformed_data` ejecuta una query `MERGE` para insertar o actualizar datos en la tabla `WeatherData`, asegurando la integridad de los datos y evitando registros duplicados.
-    - 4. Automatizacion:
-            Logre automatizar el proceso creando un archivo `.bat` y ejecutandolo diariamente con una tarea programada en Windows.
+- 1. Extraccion:
+    La funcion `extract_weather_data` realiza la consulta a la API para recibir los datos y retornarlos en formato JSON.
+- 2. Transformacion:
+    La funcion `transform_weather_data` organiza los datos en un DataFrame de Pandas filtrando por datos en concreto.
+- 3. Carga:
+    La funcion `load_transformed_data` ejecuta una query `MERGE` para insertar o actualizar datos en la tabla `WeatherData`, asegurando la integridad de los datos y evitando registros duplicados.
+- 4. Automatizacion:
+    Logre automatizar el proceso creando un archivo `.bat` y ejecutandolo diariamente con una tarea programada en Windows.
