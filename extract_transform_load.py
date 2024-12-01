@@ -105,6 +105,6 @@ def etl(city):
 
 # Iniciar el script
 if __name__ == "__main__":
-    ciudades = ['Buenos Aires', 'Rosario','Cordoba','Mendoza','San Juan','La Plata', 'El Bolson', 'Bariloche', 'Mar del Plata']
+    ciudades = ['Buenos Aires','Corrientes', 'Rosario','Cordoba','Mendoza','San Juan','La Plata', 'El Bolson', 'Bariloche', 'Mar del Plata']
     for ciudad in ciudades:
         etl(ciudad)
