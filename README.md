@@ -63,7 +63,7 @@ DB_URL= conexion_a_la_BD
 ```
 ---
 
-### 4. Automatizacion del proceso:
+## 4. Automatizacion del proceso:
 - 1. Creando un archivo `.bat` con el siguiente contenido para ejecutar el script con una tarea programada:
  ``` bat
  @echo off
@@ -76,7 +76,7 @@ python extract_transform_load.py
 
 ---
 
-### 5. Ejecucion del proyecto:
+## 5. Ejecucion del proyecto:
 - Primero hay que asegurarse de haber creado la tabla donde se almacenaran los datos ejecutando el sig. script en sql:
 ``` sql
 CREATE TABLE WeatherData (
@@ -91,7 +91,7 @@ CREATE TABLE WeatherData (
 ```
 ---
 
-### 6. Detalles del proceso ETL:
+## 6. Detalles del proceso ETL:
 - 1. Extraccion:
     La funcion `extract_weather_data` realiza la consulta a la API para recibir los datos y retornarlos en formato JSON.
 - 2. Transformacion:
