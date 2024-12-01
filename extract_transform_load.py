@@ -6,15 +6,14 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from datetime import datetime
 
-#CARGO LAS VARIABLES DE ENTORNO CON LAS CREDENCIALES
-load_dotenv()
-api_key = os.getenv("API_KEY")
-db_url = os.getenv("DB_URL")
-engine = create_engine(db_url) #DECLARO EL MOTOR CON LA CONEXION A SQL
+
+load_dotenv() #cargo las variables de entorno
+api_key = os.getenv("API_KEY") #llave de la api
+db_url = os.getenv("DB_URL") #url de la base de datos
+engine = create_engine(db_url) #motor de la conexion a sql
 
 
-#FUNCION PARA EXTRAER LOS DATOS DE LA API EN FORMATO JSON
-
+#extraigo los datos de la api y retorno un JSON
 def extract_weather_data(city_name):
     url = f'http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}&units=metric'
     response = requests.get(url)
@@ -26,22 +25,22 @@ def extract_weather_data(city_name):
         return None
 
 
-#FUNCION PARA TRANSFORMAR EL JSON A UN DATAFRAME
+#filtro y transformo los datos
 def transform_weather_data(data):
     if data is not None:
-        # Filtrar y estructurar los datos necesarios
+       
         weather_data = {
             "city_name": data['name'],
             "country": data['sys']['country'],
             "temperature": data['main']['temp'],
             "weather_description": data['weather'][0]['description'],
-            "date_time": pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')  # Hora actual
+            "date_time": pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')  #fecha y hora actual
         }
         return pd.DataFrame([weather_data])
     return None
 
 
-#CARGO LOS DATOS TRANSFORMADOS Y CON UNA QUERY VERIFICO PARA EVITAR DUPLICADOS
+#cargo los datos transformados y con una query comparo las filas
 
 def load_transformed_data(df):
     if df is not None:
@@ -75,7 +74,7 @@ def load_transformed_data(df):
                         WHEN NOT MATCHED THEN
                             INSERT (city_name, country, temperature, weather_description, date_time)
                             VALUES (source.city_name, source.country, source.temperature, source.weather_description, source.date_time);
-                    """) #use un MERGE para comparar en ambos casos y ejecutar o insrtar segun corresponda
+                    """) #use un MERGE para comparar en ambos casos y actualizar o insertar segun corresponda
 
                         #hago la verificacion del dataframe y la tabla
                     connection.execute(UPSERT, {
@@ -86,14 +85,14 @@ def load_transformed_data(df):
                         "date_time": row['date_time']
                     })
 
-                    #tuve que usar commit porque no se modificaba la tabla 
+                    #commit para guardar los cambios
                     connection.commit()
 
             print(f"Datos cargados/actualizados en la tabla WeatherData")
         except Exception as e:
             print(f"Error al cargar los datos a SQL: {str(e)}")
 
-#funcion principal 
+#funcion principal
 def etl(city):
     print(f"** Extrayendo datos del clima de: {city} **")
     raw_data = extract_weather_data(city)
