@@ -76,7 +76,7 @@ def load_transformed_data(df):
                             VALUES (source.city_name, source.country, source.temperature, source.weather_description, source.date_time);
                     """) #use un MERGE para comparar en ambos casos y actualizar o insertar segun corresponda
 
-                        #hago la verificacion del dataframe y la tabla
+                        #hago la verificacion del dataframe y la tabla. luego inserta/actualiza
                     connection.execute(UPSERT, {
                         "city_name": row['city_name'],
                         "country": row['country'],
