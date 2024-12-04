@@ -29,14 +29,14 @@ def extract_data(city_name):
 def transform_data(data):
     if data is not None:
        
-        weather_data = {
+        data = {
             "city_name": data['name'],
             "country": data['sys']['country'],
             "temperature": data['main']['temp'],
             "weather_description": data['weather'][0]['description'],
             "date_time": pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')  #fecha y hora actual
         }
-        return pd.DataFrame([weather_data])
+        return pd.DataFrame([data])
     return None
 
 
