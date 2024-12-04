@@ -14,7 +14,7 @@ engine = create_engine(db_url) #motor de la conexion a sql
 
 
 #extraigo los datos de la api y retorno un JSON
-def extract_weather_data(city_name):
+def extract_data(city_name):
     url = f'http://api.openweathermap.org/data/2.5/weather?q={city_name}&appid={api_key}&units=metric'
     response = requests.get(url)
     if response.status_code == 200:
@@ -26,7 +26,7 @@ def extract_weather_data(city_name):
 
 
 #filtro y transformo los datos
-def transform_weather_data(data):
+def transform_data(data):
     if data is not None:
        
         weather_data = {
@@ -96,7 +96,9 @@ def load_transformed_data(df):
 def etl(city):
     print(f"** Extrayendo datos del clima de: {city} **")
     raw_data = extract_weather_data(city)
-    transformed_data = transform_weather_data(raw_data)
+    if raw_data is not None:
+        print("** Datos extraidos correctamente")
+    transformed_data = transform_data(raw_data)
     if transformed_data is not None:
         load_transformed_data(transformed_data)
     else:
