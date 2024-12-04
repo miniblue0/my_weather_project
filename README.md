@@ -18,8 +18,8 @@ Este proyecto es un proceso **ETL (Extract, Transform, Load)** que utiliza la AP
 El script realiza las siguientes etapas:
 
 1. **Extraccion**: Obtiene datos en formato JSON desde la API de OpenWeatherMap para un conjunto de ciudades.
-2. **Transformacion**: Filtra y organiza los datos relevantes (temperatura, descripción del clima, ubicación y hora).
-3. **Carga**: Inserta o actualiza los datos en una base de datos SQL, evitando duplicados mediante una consulta `MERGE`.
+2. **Transformacion**: Filtra y organiza los datos relevantes (`city_name`, `country`, `temperature`, `weather_description` y `date_time`).
+3. **Carga**: Inserta o actualiza los datos en una base de datos SQL, evitando duplicados mediante una consulta `MERGE`. Ademas cada registro de la tabla tiene el campo `id` con la propiedad `IDENTITY (1,1)` por lo cual se obtiene una vista mas ordenada de los datos. 
 4. **Automatizacion**: Si bien este paso era opcional me parecio un buen detalle a agregar al proyecto. Utilice un archivo `.bat` y el programador de tareas de windows
 
 ---
@@ -31,9 +31,12 @@ El script realiza las siguientes etapas:
   - `pandas` para transformar datos.
   - `sqlalchemy` para interactuar con la base de datos.
   - `dotenv` para la gestion de variables de entorno.
-- **Base de Datos**: Microsoft SQL Server.
-- **API**: OpenWeatherMap para obtener datos meteorologicos.
-- **Sistema Operativo**: Windows (para la tarea programada).
+- **Base de Datos**: 
+  - `Microsoft SQL Server` para la tabla y base de datos.
+- **API**: 
+  - `OpenWeatherMap` para obtener datos meteorologicos.
+- **Sistema Operativo**: 
+  - `Windows` para la tarea programada.
 
 ---
 
@@ -72,7 +75,7 @@ python extract_transform_load.py
 ```
 - 2. Configurar la tarea:
     * Desde el Programador de Tareas en Windows:
-        Hay que ir a Crear Tarea>General y ahi se le asigna un nombre, luego en 'Desencadenadores' hay que crear uno nuevo para que la tarea se ejecute diariamente a X hora. En 'Acciones' seleccionamos "Iniciar un programa" y desde ahi buscamos el archivo .bat creado anteriormente. Para finalizar guardamos la tarea.
+        Hay que ir a `Crear Tarea>General` y ahi se le asigna un nombre, luego en `Desencadenadores` hay que crear uno nuevo para que la tarea se ejecute diariamente a X hora. En `Acciones` seleccionamos `Iniciar un programa` y desde ahi buscamos el archivo .bat creado anteriormente. Para finalizar guardamos la tarea.
 
 ---
 
